@@ -72,16 +72,22 @@ def git_commit_and_push_with_token(filename):
         print("GitHub token not found.")
         return
 
-    # Replace with your GitHub username and repo name
     remote_url = f"https://{github_token}@github.com/PriyanshCooks/testBot.git"
 
     try:
+        # Add remote only if not already added
+        subprocess.run(["git", "remote", "add", "origin", remote_url], check=True)
+    except subprocess.CalledProcessError:
+        # If remote already exists, update it
         subprocess.run(["git", "remote", "set-url", "origin", remote_url], check=True)
+
+    try:
         subprocess.run(["git", "add", filename], check=True)
         subprocess.run(["git", "commit", "-m", f"Add/update {os.path.basename(filename)}"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"[Git Error] {e}")
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
