@@ -64,7 +64,7 @@ def get_conversation_from_file(filename):
 
 def save_conversation_to_file(conversation: Conversation, filename):
     with open(filename, "w") as f:
-        f.write(conversation.json(indent=2))
+        f.write(conversation.model_dump_json(indent=2))
 
 def git_commit_and_push_with_token(filename):
     github_token = os.environ.get("GITHUB_TOKEN")
