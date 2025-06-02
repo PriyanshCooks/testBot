@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Discovery Bot</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Customer Discovery Bot</h1>
+
+        <div class="history">
+            {% for qa in qa_log %}
+                <div class="qa-block">
+                    <p><strong>Q:</strong> {{ qa.question }}</p>
+                    <p><strong>A:</strong> {{ qa.answer }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
+        <form method="POST">
+            <p><strong>Q:</strong> {{ question }}</p>
+            <input type="text" name="answer" placeholder="Your answer..." required>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

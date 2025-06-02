@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Conversation Complete</title>
+</head>
+<body>
+    <h2>Final Q&A</h2>
+    <ul>
+        {% for qa in qa_log %}
+            <li><strong>Q:</strong> {{ qa.question }}<br><strong>A:</strong> {{ qa.answer }}</li>
+        {% endfor %}
+    </ul>
+    <p>Thank you! Your product has been analyzed.</p>
+</body>
+</html>
