@@ -17,7 +17,7 @@ app.permanent_session_lifetime = timedelta(minutes=60)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-DATA_DIR = "chat_sessions"  # folder to store JSON files
+DATA_DIR = "conversations/chat_sessions"  # ✅ Fixed folder path
 
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
@@ -63,14 +63,13 @@ def get_conversation_from_file(filename):
         return Conversation()
 
 def save_conversation_to_file(conversation, filename):
-    os.makedirs("conversations", exist_ok=True)
-    file_path = os.path.join("conversations", filename)
+    file_path = os.path.join(DATA_DIR, filename)
     with open(file_path, "w") as f:
-        f.write(conversation.model_dump_json(indent=2))  # Fix for Pydantic v2
+        f.write(conversation.model_dump_json(indent=2))  # For Pydantic v2
     print(f"[✅] Saved conversation to {file_path}")
 
 
-def git_commit_and_push_with_token(filename):
+def git_commit_and_push_with_token(filepath):
     github_token = os.environ.get("GITHUB_TOKEN")
     if not github_token:
         print("GitHub token not found.")
@@ -79,15 +78,13 @@ def git_commit_and_push_with_token(filename):
     remote_url = f"https://{github_token}@github.com/PriyanshCooks/testBot.git"
 
     try:
-        # Add remote only if not already added
-        subprocess.run(["git", "remote", "add", "origin", remote_url], check=True)
-    except subprocess.CalledProcessError:
-        # If remote already exists, update it
         subprocess.run(["git", "remote", "set-url", "origin", remote_url], check=True)
+    except subprocess.CalledProcessError:
+        print("[Git Error] Couldn't update remote URL.")
 
     try:
-        subprocess.run(["git", "add", filename], check=True)
-        subprocess.run(["git", "commit", "-m", f"Add/update {os.path.basename(filename)}"], check=True)
+        subprocess.run(["git", "add", filepath], check=True)
+        subprocess.run(["git", "commit", "-m", f"Add/update {os.path.basename(filepath)}"], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"[Git Error] {e}")
@@ -96,10 +93,11 @@ def git_commit_and_push_with_token(filename):
 @app.route("/", methods=["GET", "POST"])
 def index():
     if "chat_file" not in session:
-        session["chat_file"] = os.path.join(DATA_DIR, f"chat_{uuid.uuid4().hex}.json")
+        session["chat_file"] = f"chat_{uuid.uuid4().hex}.json"
 
     filename = session["chat_file"]
-    conversation = get_conversation_from_file(filename)
+    full_path = os.path.join(DATA_DIR, filename)
+    conversation = get_conversation_from_file(full_path)
 
     history = []
     for item in conversation.conversation:
@@ -120,7 +118,7 @@ def index():
 
         if len([q for q in conversation.conversation if q.role == "assistant"]) >= 10:
             save_conversation_to_file(conversation, filename)
-            git_commit_and_push_with_token(filename)  # 🔁 Push to GitHub
+            git_commit_and_push_with_token(os.path.join(DATA_DIR, filename))
             return redirect(url_for("complete"))
 
         next_question = ask_openai(
@@ -139,6 +137,7 @@ def index():
 
         return render_template("index.html", question=next_question, qa_log=conversation.conversation)
 
+    # GET request
     conversation = Conversation()
     first_question = "What is your product and what does it do?"
     conversation.conversation.append(QAItem(role="assistant", question=first_question, answer=""))
@@ -149,10 +148,11 @@ def index():
 @app.route("/complete")
 def complete():
     filename = session.get("chat_file")
-    if not filename or not os.path.exists(filename):
+    full_path = os.path.join(DATA_DIR, filename)
+    if not filename or not os.path.exists(full_path):
         return "No conversation found.", 404
 
-    conversation = get_conversation_from_file(filename)
+    conversation = get_conversation_from_file(full_path)
     return render_template("complete.html", qa_log=conversation.conversation)
 
 if __name__ == "__main__":

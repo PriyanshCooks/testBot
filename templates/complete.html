@@ -2,14 +2,21 @@
 <html>
 <head>
     <title>Conversation Complete</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h2>Final Q&A</h2>
-    <ul>
-        {% for qa in qa_log %}
-            <li><strong>Q:</strong> {{ qa.question }}<br><strong>A:</strong> {{ qa.answer }}</li>
-        {% endfor %}
-    </ul>
+
+    {% for item in qa_log %}
+        {% if item.role == "assistant" %}
+            <div class="qa-block">
+                <div class="question">Q: {{ item.question }}</div>
+        {% elif item.role == "user" %}
+                <div class="answer">A: {{ item.answer }}</div>
+            </div>
+        {% endif %}
+    {% endfor %}
+
     <p>Thank you! Your product has been analyzed.</p>
 </body>
 </html>
