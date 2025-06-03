@@ -62,9 +62,13 @@ def get_conversation_from_file(filename):
     except Exception:
         return Conversation()
 
-def save_conversation_to_file(conversation: Conversation, filename):
-    with open(filename, "w") as f:
-        f.write(conversation.model_dump_json(indent=2))
+def save_conversation_to_file(conversation, filename):
+    os.makedirs("conversations", exist_ok=True)
+    file_path = os.path.join("conversations", filename)
+    with open(file_path, "w") as f:
+        f.write(conversation.model_dump_json(indent=2))  # Fix for Pydantic v2
+    print(f"[✅] Saved conversation to {file_path}")
+
 
 def git_commit_and_push_with_token(filename):
     github_token = os.environ.get("GITHUB_TOKEN")
