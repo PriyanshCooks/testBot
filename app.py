@@ -17,7 +17,7 @@ app.permanent_session_lifetime = timedelta(minutes=60)
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-DATA_DIR = "conversations/chat_sessions"  # ✅ Fixed folder path
+DATA_DIR = "conversations/chat_sessions"  # ✅ Folder path
 
 if not os.path.exists(DATA_DIR):
     os.makedirs(DATA_DIR)
@@ -64,10 +64,10 @@ def get_conversation_from_file(filename):
 
 def save_conversation_to_file(conversation, filename):
     file_path = os.path.join(DATA_DIR, filename)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)  # ✅ Ensure directory exists
     with open(file_path, "w") as f:
-        f.write(conversation.model_dump_json(indent=2))  # For Pydantic v2
+        f.write(conversation.model_dump_json(indent=2))
     print(f"[✅] Saved conversation to {file_path}")
-
 
 def git_commit_and_push_with_token(filepath):
     github_token = os.environ.get("GITHUB_TOKEN")
@@ -88,7 +88,6 @@ def git_commit_and_push_with_token(filepath):
         subprocess.run(["git", "push", "origin", "main"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"[Git Error] {e}")
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
