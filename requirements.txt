@@ -3,3 +3,6 @@ openai
 python-dotenv
 pydantic
 gunicorn
+flask_sqlalchemy
+PyMySQL
+fuzzywuzzy[speedup]

@@ -10,7 +10,20 @@
   <div class="container">
     <h1>Customer Discovery Bot</h1>
 
-    <div class="history">
+    <!-- Show current question only -->
+    <div class="current-question">
+      <div class="question">🤖 {{ question }}</div>
+    </div>
+
+    <!-- Answer input form -->
+    <form method="POST" class="input-form">
+      <label for="answer">Your Answer:</label>
+      <input type="text" name="answer" id="answer" placeholder="Type your answer here..." required autocomplete="off" />
+      <button type="submit">Submit</button>
+    </form>
+
+    <!-- Optional: show chat history below the form -->
+    <div class="history" style="margin-top: 2rem;">
       {% for item in qa_log %}
         <div class="qa-block">
           {% if item.role == "assistant" %}
@@ -21,12 +34,6 @@
         </div>
       {% endfor %}
     </div>
-
-    <form method="POST" class="input-form">
-      <label for="answer">Your Answer:</label>
-      <input type="text" name="answer" id="answer" placeholder="Type your answer here..." required />
-      <button type="submit">Submit</button>
-    </form>
   </div>
 </body>
 </html>
