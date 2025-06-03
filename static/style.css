@@ -2,36 +2,68 @@ body {
     font-family: Arial, sans-serif;
     padding: 2rem;
     background: #f2f2f2;
-}
-
-.container {
+    margin: 0;
+  }
+  
+  .container {
     max-width: 700px;
     margin: auto;
     background: white;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.history {
-    margin-bottom: 1rem;
-}
-
-.qa-block {
+  }
+  
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 1.5rem;
+  }
+  
+  .history {
+    margin-bottom: 1.5rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .qa-block {
     background: #e9ecef;
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 6px;
-}
-
-input[type="text"] {
+    word-wrap: break-word;
+  }
+  
+  .qa-block .question {
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 0.5rem;
+  }
+  
+  .qa-block .answer {
+    color: #333;
+  }
+  
+  .input-form {
+    margin-top: 1rem;
+  }
+  
+  .input-form label {
+    font-weight: bold;
+    color: #555;
+  }
+  
+  input[type="text"] {
     width: 100%;
     padding: 0.7rem;
     margin-top: 0.5rem;
     border-radius: 4px;
     border: 1px solid #ccc;
-}
-button {
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  
+  button {
     margin-top: 1rem;
     padding: 0.5rem 1.2rem;
     border: none;
@@ -39,4 +71,11 @@ button {
     color: white;
     border-radius: 4px;
     cursor: pointer;
-}
+    font-size: 1rem;
+    transition: background 0.3s ease;
+  }
+  
+  button:hover {
+    background: #0056b3;
+  }
+  
