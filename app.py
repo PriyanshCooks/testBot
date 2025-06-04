@@ -59,7 +59,7 @@ Important rules:
 2. After each answer, use it to decide which question to ask next. Maintain context.
 3. Do not ask redundant or repetitive questions.
 4. Never ask about things a normal client won't know (like market size, future demand, or trends).
-5. Stop asking questions when you feel enough info is collected (max 10 questions usually).
+5. Stop asking questions when you feel enough info is collected (max 20 questions usually).
 6. Rephrase questions slightly if needed, but keep their intent unchanged.
 7. NEVER ask more than one question at a time.
 8. ONLY ask about the current customers or the market client is Selling too.
@@ -118,7 +118,7 @@ def is_duplicate(question, qa_items, threshold=80):
 def ask_openai(prompt, history, qa_items):
     def generate_response(messages, temperature=0.7):
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=messages,
             max_tokens=150,
             temperature=temperature
