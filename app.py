@@ -47,7 +47,7 @@ class QAItem(db.Model):
     answer = db.Column(db.Text, default="")
 
 SYSTEM_PROMPT = """
-You are a product discovery assistant.
+You are a product discovery assistant tasked with collecting essential factual information about a client’s product.
 
 Your task is to collect essential information about a client's product in a professional and conversational tone.
 
@@ -116,28 +116,33 @@ def is_duplicate(question, qa_items, threshold=80):
 
 
 def ask_openai(prompt, history, qa_items):
-    def generate_response():
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        messages.extend(history)
-        messages.append({"role": "user", "content": prompt})
-
+    def generate_response(messages, temperature=0.7):
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=messages,
             max_tokens=150,
-            temperature=0.7
+            temperature=temperature
         )
         return response.choices[0].message.content.strip()
 
+    # Build initial messages
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    messages.extend(history)
+
     # First attempt
-    question = generate_response()
+    question = generate_response(messages, temperature=0.7)
+
     if is_forbidden(question) or is_duplicate(question, qa_items):
-        # Retry once with a stricter system instruction
-        retry_prompt = prompt + (
+        # Retry once with a stricter system instruction appended
+        retry_system_prompt = SYSTEM_PROMPT + (
             "\nAvoid forbidden topics like demand forecasting or vague future trends. "
             "Do not repeat previously asked questions. Ask only useful, new questions."
         )
-        question = generate_response()
+        retry_messages = [{"role": "system", "content": retry_system_prompt}]
+        retry_messages.extend(history)
+
+        # Retry with lower temperature for less randomness
+        question = generate_response(retry_messages, temperature=0.3)
 
         if is_forbidden(question) or is_duplicate(question, qa_items):
             question = "Thank you. That’s all the questions we needed for now."  # fallback
@@ -160,15 +165,13 @@ def get_qa_history(chat_session):
 
 def build_history(qa_items):
     history = []
-    assistant_items = [item for item in qa_items if item.role == "assistant"]
-    user_items = [item for item in qa_items if item.role == "user"]
-
-    for i, assistant_item in enumerate(assistant_items):
-        history.append({"role": "assistant", "content": assistant_item.question})
-        if i < len(user_items):
-            history.append({"role": "user", "content": user_items[i].answer})
-
+    for item in qa_items:
+        if item.role == "assistant":
+            history.append({"role": "assistant", "content": item.question})
+        elif item.role == "user":
+            history.append({"role": "user", "content": item.answer})
     return history
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -199,6 +202,8 @@ def index():
         user_qa = QAItem(chat_session_id=chat_session.id, role="user", question="", answer=user_answer)
         db.session.add(user_qa)
         db.session.commit()
+        qa_items = get_qa_history(chat_session)
+
         history.append({"role": "user", "content": user_answer})
 
         assistant_questions_count = QAItem.query.filter_by(chat_session_id=chat_session.id, role="assistant").count()
@@ -220,7 +225,6 @@ def index():
         assistant_qa = QAItem(chat_session_id=chat_session.id, role="assistant", question=next_question, answer="")
         db.session.add(assistant_qa)
         db.session.commit()
-
         qa_items = get_qa_history(chat_session)
         return render_template("index.html", question=next_question, qa_log=qa_items)
 
